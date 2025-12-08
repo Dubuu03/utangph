@@ -809,6 +809,12 @@ button.secondary:active {
     padding: 0;
   }
 
+  .app-header {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+  }
+
   .app-header h1 {
     font-size: 1.35rem;
   }
@@ -1085,5 +1091,51 @@ button.secondary:active {
   .summary-section h3 {
     font-size: 0.95rem;
     margin-bottom: 0.75rem;
+  }
+}
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  .card {
+    padding: 1rem;
+    margin: 0.5rem;
+    box-shadow: none;
+  }
+
+  .expense-table {
+    font-size: 0.85rem;
+  }
+
+  .expense-table th,
+  .expense-table td {
+    padding: 0.5rem;
+  }
+
+  .settlement-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .settlement-item {
+    text-align: center;
+  }
+
+  .settlement-amount {
+    font-size: 1.2rem;
+  }
+}
+
+/* Adjust header and navigation for mobile */
+@media (max-width: 768px) {
+  .app-header {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+  }
+
+  .bottom-nav {
+    width: 100%;
+    left: 0;
+    transform: none;
   }
 }

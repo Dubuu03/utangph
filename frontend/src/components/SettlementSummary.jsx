@@ -95,7 +95,7 @@ function SettlementSummary({ expenses, members }) {
         </div>
       </div>
 
-      <div className="card">
+      <div className="card settlement-summary">
         <h2>Settlement Plan</h2>
         {settlements.length === 0 ? (
           <div className="empty-state">
@@ -108,7 +108,9 @@ function SettlementSummary({ expenses, members }) {
                 <p>
                   <strong>{settlement.from}</strong> pays <strong>{settlement.to}</strong>
                 </p>
-                <div className="settlement-amount">₱{settlement.amount.toFixed(2)}</div>
+                <div className="settlement-amount">
+                  ₱{settlement.amount.toFixed(2)}
+                </div>
               </div>
             ))}
           </div>

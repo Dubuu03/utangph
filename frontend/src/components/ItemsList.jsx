@@ -92,7 +92,7 @@ function ItemsList({ expenses, members, onRefresh }) {
   }
 
   return (
-    <div className="card">
+    <div className="card items-list">
       <h2>All Items</h2>
       <div className="table-container">
         <table className="expense-table">
@@ -141,7 +141,8 @@ function ItemsList({ expenses, members, onRefresh }) {
                         className="edit-input edit-amount"
                       />
                     ) : (
-                      `₱${expense.amount.toFixed(2)}`
+                      `
+                      \u20b1${expense.amount.toFixed(2)}`
                     )}
                   </td>
                   <td data-label="Split Between">
@@ -163,7 +164,7 @@ function ItemsList({ expenses, members, onRefresh }) {
                     )}
                   </td>
                   <td data-label="Each Pays" className="amount">
-                    ₱{sharePerPerson.toFixed(2)}
+                    \u20b1{sharePerPerson.toFixed(2)}
                   </td>
                   <td data-label="Actions">
                     {isEditing ? (
@@ -173,14 +174,14 @@ function ItemsList({ expenses, members, onRefresh }) {
                           className="save-btn"
                           title="Save"
                         >
-                          ✓
+                          \u2713
                         </button>
                         <button 
                           onClick={cancelEdit} 
                           className="cancel-btn"
                           title="Cancel"
                         >
-                          ✕
+                          \u2715
                         </button>
                       </div>
                     ) : (
@@ -190,14 +191,14 @@ function ItemsList({ expenses, members, onRefresh }) {
                           className="edit-btn"
                           title="Edit"
                         >
-                          ✏️
+                          \u270f\ufe0f
                         </button>
                         <button 
                           onClick={() => deleteExpense(expense._id)} 
                           className="delete-btn"
                           title="Delete"
                         >
-                          🗑️
+                          \ud83d\uddd1\ufe0f
                         </button>
                       </div>
                     )}
