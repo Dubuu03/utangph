@@ -87,18 +87,23 @@ function ItemsList({ expenses, members, onRefresh }) {
   if (expenses.length === 0) {
     return (
       <div className="card">
-        <h2>All Items</h2>
         <div className="empty-state">
-          <p>No items yet. Add items above to get started!</p>
+          <div className="empty-icon">📋</div>
+          <p>No items yet</p>
+          <small>Add items from the "Add Items" page to see them here!</small>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="card items-list">
-      <h2>All Items</h2>
-      <div className="table-container">
+    <div className="items-page">
+      <div className="card items-list">
+        <div className="card-header">
+          <h2>📋 All Items</h2>
+          <span className="item-count">{expenses.length} {expenses.length === 1 ? 'item' : 'items'}</span>
+        </div>
+        <div className="table-container">
         <table className="expense-table">
           <thead>
             <tr>
@@ -215,6 +220,7 @@ function ItemsList({ expenses, members, onRefresh }) {
           </tbody>
         </table>
       </div>
+    </div>
     </div>
   )
 }

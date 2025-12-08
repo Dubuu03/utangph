@@ -33,26 +33,11 @@ function MemberManagement({ members, onAddMember, onRefresh }) {
   }
 
   return (
-    <div className="card members-card">
-      <h2>Members</h2>
-      <div className="members-container">
-        <div className="member-chips">
-          {members.length === 0 ? (
-            <p className="empty-members">No members yet. Add members below to get started!</p>
-          ) : (
-            members.map(member => (
-              <div key={member._id} className="member-chip">
-                <span>{member.name}</span>
-                <button 
-                  onClick={() => deleteMember(member._id)} 
-                  className="remove-chip"
-                  title="Remove member"
-                >
-                  ✕
-                </button>
-              </div>
-            ))
-          )}
+    <div className="members-page">
+      <div className="card members-card">
+        <div className="card-header">
+          <h2>👥 Team Members</h2>
+          <span className="member-count">{members.length} {members.length === 1 ? 'member' : 'members'}</span>
         </div>
         
         <form onSubmit={handleSubmit} className="add-member-form">
@@ -60,11 +45,39 @@ function MemberManagement({ members, onAddMember, onRefresh }) {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Add new member..."
+            placeholder="Enter member name..."
             className="member-input"
           />
-          <button type="submit" className="primary">Add</button>
+          <button type="submit" className="primary">
+            <span className="btn-icon">+</span> Add Member
+          </button>
         </form>
+
+        <div className="members-grid">
+          {members.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">👥</div>
+              <p>No members yet</p>
+              <small>Add your first member above to get started!</small>
+            </div>
+          ) : (
+            members.map(member => (
+              <div key={member._id} className="member-card">
+                <div className="member-avatar">{member.name.charAt(0).toUpperCase()}</div>
+                <div className="member-info">
+                  <span className="member-name">{member.name}</span>
+                </div>
+                <button 
+                  onClick={() => deleteMember(member._id)} 
+                  className="member-delete"
+                  title="Remove member"
+                >
+                  🗑️
+                </button>
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   )

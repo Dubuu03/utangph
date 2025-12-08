@@ -4,7 +4,7 @@ import ExpenseForm from './components/ExpenseForm'
 import ExpenseList from './components/ExpenseList'
 import ItemsList from './components/ItemsList'
 import MemberManagement from './components/MemberManagement'
-import BottomNav from './components/BottomNav'
+import Sidebar from './components/Sidebar'
 
 function App() {
   const [expenses, setExpenses] = useState([])
@@ -74,45 +74,51 @@ function App() {
   }
 
   return (
-    <div className="app mobile-app">
-      <header className="app-header">
-        <h1>🏠 UtangPH</h1>
-        <p>Shared Expense Tracker</p>
-      </header>
+    <div className="app">
+      <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
+      
+      <div className="main-container">
+        <header className="app-header">
+          <h1>
+            {currentPage === 'members' && '👥 Members'}
+            {currentPage === 'add' && '➕ Add Items'}
+            {currentPage === 'items' && '📋 All Items'}
+            {currentPage === 'settlement' && '💰 Summary'}
+          </h1>
+        </header>
 
-      <main className="app-content">
-        {currentPage === 'members' && (
-          <MemberManagement 
-            members={members} 
-            onAddMember={addMember} 
-            onRefresh={fetchMembers} 
-          />
-        )}
-        
-        {currentPage === 'add' && (
-          <ExpenseForm 
-            members={members} 
-            onAddExpense={addExpense} 
-          />
-        )}
-        
-        {currentPage === 'items' && (
-          <ItemsList 
-            expenses={expenses} 
-            members={members}
-            onRefresh={fetchExpenses}
-          />
-        )}
-        
-        {currentPage === 'settlement' && (
-          <ExpenseList 
-            expenses={expenses} 
-            members={members}
-          />
-        )}
-      </main>
-
-      <BottomNav currentPage={currentPage} onPageChange={setCurrentPage} />
+        <main className="app-content">
+          {currentPage === 'members' && (
+            <MemberManagement 
+              members={members} 
+              onAddMember={addMember} 
+              onRefresh={fetchMembers} 
+            />
+          )}
+          
+          {currentPage === 'add' && (
+            <ExpenseForm 
+              members={members} 
+              onAddExpense={addExpense} 
+            />
+          )}
+          
+          {currentPage === 'items' && (
+            <ItemsList 
+              expenses={expenses} 
+              members={members}
+              onRefresh={fetchExpenses}
+            />
+          )}
+          
+          {currentPage === 'settlement' && (
+            <ExpenseList 
+              expenses={expenses} 
+              members={members}
+            />
+          )}
+        </main>
+      </div>
     </div>
   )
 }

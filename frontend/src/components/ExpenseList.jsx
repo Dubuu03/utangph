@@ -55,9 +55,10 @@ function ExpenseList({ expenses, members }) {
   if (expenses.length === 0) {
     return (
       <div className="card">
-        <h2>Settlement Summary</h2>
         <div className="empty-state">
-          <p>No expenses yet. Add items above to see who owes whom!</p>
+          <div className="empty-icon">💰</div>
+          <p>No expenses yet</p>
+          <small>Add items to see the settlement summary!</small>
         </div>
       </div>
     )
@@ -66,11 +67,14 @@ function ExpenseList({ expenses, members }) {
   const { balances, matrix } = calculateOwesMatrix()
 
   return (
-    <div className="card settlement-summary-card">
-      <h2>Settlement Summary</h2>
-      
-      <div className="summary-section">
-        <h3>Who Owes Whom</h3>
+    <div className="settlement-page">
+      <div className="card">
+        <div className="card-header">
+          <h2>💰 Settlement Summary</h2>
+        </div>
+        
+        <div className="summary-section">
+          <h3>💸 Who Owes Whom</h3>
         <div className="table-container">
           <table className="matrix-table">
             <thead>
@@ -111,8 +115,12 @@ function ExpenseList({ expenses, members }) {
         </div>
       </div>
 
-      <div className="summary-section">
-        <h3>Individual Balances</h3>
+      </div>
+
+      <div className="card">
+        <div className="card-header">
+          <h2>💳 Individual Balances</h2>
+        </div>
         <div className="balance-grid">
           {Object.entries(balances).map(([id, data]) => (
             <div key={id} className="balance-card">

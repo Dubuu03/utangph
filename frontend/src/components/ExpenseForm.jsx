@@ -93,12 +93,14 @@ function ExpenseForm({ members, onAddExpense }) {
   };
 
   return (
-    <div className="member-expense-sections">
-      <h2>Add Items Paid By Each Member</h2>
-      
+    <div className="expense-form-page">
       {members.length === 0 ? (
-        <div className="empty-state">
-          <p>Add members first to start tracking expenses!</p>
+        <div className="card">
+          <div className="empty-state">
+            <div className="empty-icon">➕</div>
+            <p>Add members first to start tracking expenses!</p>
+            <small>Go to the Members page to add team members</small>
+          </div>
         </div>
       ) : (
         members.map(member => {
@@ -106,8 +108,11 @@ function ExpenseForm({ members, onAddExpense }) {
           const availableMembers = getAvailableMembers(member._id)
           
           return (
-            <div key={member._id} className="member-section">
-              <h3>{member.name}'s Items</h3>
+            <div key={member._id} className="card member-section">
+              <div className="section-header">
+                <div className="member-avatar-small">{member.name.charAt(0).toUpperCase()}</div>
+                <h3>{member.name}'s Items</h3>
+              </div>
               <form onSubmit={(e) => handleSubmit(e, member._id)} className="items-form">
                 {items.map((item, index) => (
                   <div key={index} className="item-container">
@@ -172,10 +177,10 @@ function ExpenseForm({ members, onAddExpense }) {
                 
                 <div className="form-actions">
                   <button type="button" onClick={() => handleAddItem(member._id)} className="secondary">
-                    + Add Another Item
+                    <span className="btn-icon">+</span> Add Another Item
                   </button>
                   <button type="submit" className="primary">
-                    Save {member.name}'s Items
+                    <span className="btn-icon">💾</span> Save Items
                   </button>
                 </div>
               </form>
