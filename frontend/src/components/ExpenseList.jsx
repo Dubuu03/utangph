@@ -168,6 +168,77 @@ function ExpenseList({ expenses, members, onRefresh }) {
 
       </div>
 
+      {/* Simplified Settlement Table */}
+      <div className="card">
+        <div className="card-header">
+          <h2><ArrowRightLeft size={28} style={{ display: 'inline-block', marginRight: '8px' }} /> Simplified Settlements</h2>
+        </div>
+        <div className="summary-section">
+          <p className="settlement-description">Net amounts after offsetting mutual debts (who owes whom)</p>
+          <div className="settlement-legend">
+            <div className="legend-item">
+              <span className="legend-box owes"></span>
+              <span>Red cells = The person in that ROW owes money to the person in that COLUMN</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-box receives"></span>
+              <span>Green cells = The person in that ROW will RECEIVE money from the person in that COLUMN</span>
+            </div>
+          </div>
+          <div className="table-container">
+            <table className="settlement-matrix-table">
+              <thead>
+                <tr>
+                  <th>Person</th>
+                  {members.map(member => (
+                    <th key={member._id}>{member.name}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {members.map(fromMember => {
+                  return (
+                    <tr key={fromMember._id}>
+                      <td className="person-name"><strong>{fromMember.name}</strong></td>
+                      {members.map(toMember => {
+                        if (fromMember._id === toMember._id) {
+                          return <td key={toMember._id} className="same-person">-</td>
+                        }
+
+                        const fromOwesTo = matrix[fromMember._id]?.[toMember._id] || 0
+                        const toOwesFrom = matrix[toMember._id]?.[fromMember._id] || 0
+                        const netAmount = fromOwesTo - toOwesFrom
+
+                        // Show net amount only if fromMember owes toMember after offset
+                        if (netAmount > 0.01) {
+                          return (
+                            <td key={toMember._id} className="net-debt-cell owes">
+                              ₱{netAmount.toFixed(2)}
+                            </td>
+                          )
+                        } else if (netAmount < -0.01) {
+                          return (
+                            <td key={toMember._id} className="net-debt-cell receives">
+                              ₱{Math.abs(netAmount).toFixed(2)}
+                            </td>
+                          )
+                        } else {
+                          return (
+                            <td key={toMember._id} className="net-debt-cell settled">
+                              ✓
+                            </td>
+                          )
+                        }
+                      })}
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <div className="card">
         <div className="card-header">
           <h2><CreditCard size={28} style={{ display: 'inline-block', marginRight: '8px' }} /> Individual Balances</h2>

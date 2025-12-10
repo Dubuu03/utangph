@@ -954,6 +954,338 @@ button.secondary:active {
   gap: var(--space-3);
 }
 
+.settlement-description {
+  color: var(--color-gray-600);
+  font-size: var(--font-size-base);
+  margin: 0 0 var(--space-4) 0;
+  font-style: italic;
+}
+
+.settlement-legend {
+  display: flex;
+  gap: var(--space-6);
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  background: var(--color-gray-50);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid var(--color-primary);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-gray-700);
+}
+
+.legend-box {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius);
+  flex-shrink: 0;
+  border: 2px solid var(--color-gray-300);
+}
+
+.legend-box.owes {
+  background: linear-gradient(to bottom, rgba(239, 68, 68, 0.3), rgba(239, 68, 68, 0.15));
+}
+
+.legend-box.receives {
+  background: linear-gradient(to bottom, rgba(16, 185, 129, 0.3), rgba(16, 185, 129, 0.15));
+}
+
+.settlement-matrix-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: white;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-gray-200);
+}
+
+.settlement-matrix-table thead {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: white;
+}
+
+.settlement-matrix-table th {
+  padding: var(--space-5);
+  text-align: center;
+  font-weight: 800;
+  font-size: var(--font-size-base);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.settlement-matrix-table th:first-child {
+  text-align: left;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.settlement-matrix-table tbody tr {
+  border-bottom: 1px solid var(--color-gray-200);
+  transition: all var(--transition-base);
+}
+
+.settlement-matrix-table tbody tr:hover {
+  background: var(--color-gray-50);
+}
+
+.settlement-matrix-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.settlement-matrix-table td {
+  padding: var(--space-4);
+  text-align: center;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+}
+
+.settlement-matrix-table td.person-name {
+  text-align: left;
+  background: linear-gradient(to right, var(--color-gray-100), white);
+  font-weight: 800;
+  color: var(--color-gray-900);
+  font-size: var(--font-size-lg);
+}
+
+.settlement-matrix-table td.same-person {
+  background: var(--color-gray-100);
+  color: var(--color-gray-400);
+  font-weight: 700;
+}
+
+.settlement-matrix-table td.net-debt-cell {
+  font-weight: 700;
+  font-size: var(--font-size-base);
+}
+
+.settlement-matrix-table td.net-debt-cell.owes {
+  background: linear-gradient(to bottom, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+  color: #dc2626;
+}
+
+.settlement-matrix-table td.net-debt-cell.receives {
+  background: linear-gradient(to bottom, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+  color: #059669;
+}
+
+.settlement-matrix-table td.net-debt-cell.settled {
+  background: linear-gradient(to bottom, rgba(229, 231, 235, 0.5), white);
+  color: #10b981;
+  font-size: var(--font-size-lg);
+}
+
+.settlement-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: white;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-gray-200);
+}
+
+.settlement-table thead {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: white;
+}
+
+.settlement-table th {
+  padding: var(--space-5);
+  text-align: left;
+  font-weight: 800;
+  font-size: var(--font-size-base);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.settlement-table th.net-payment-header {
+  text-align: center;
+  background: rgba(251, 191, 36, 0.2);
+}
+
+.settlement-table tbody tr {
+  border-bottom: 1px solid var(--color-gray-200);
+  transition: all var(--transition-base);
+}
+
+.settlement-table tbody tr:hover {
+  background: var(--color-gray-50);
+}
+
+.settlement-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.settlement-table td {
+  padding: var(--space-5);
+  font-size: var(--font-size-base);
+}
+
+.settlement-table .person-name {
+  font-weight: 700;
+  color: var(--color-gray-900);
+  font-size: var(--font-size-lg);
+}
+
+.settlement-table .owes-amount {
+  font-weight: 600;
+  color: var(--color-gray-700);
+  text-align: center;
+}
+
+.settlement-table .net-payment-cell {
+  text-align: center;
+  background: linear-gradient(to right, rgba(251, 191, 36, 0.05), rgba(251, 191, 36, 0.1));
+}
+
+.settlement-table .net-payment-cell.settled {
+  background: linear-gradient(to right, rgba(16, 185, 129, 0.05), rgba(16, 185, 129, 0.1));
+}
+
+.net-payment-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.payment-arrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.payment-arrow .payer {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.payment-arrow .arrow {
+  color: var(--color-primary);
+  font-size: var(--font-size-xl);
+  font-weight: 900;
+}
+
+.payment-arrow .receiver {
+  color: #10b981;
+  font-weight: 700;
+}
+
+.net-amount {
+  display: inline-block;
+  padding: var(--space-2) var(--space-4);
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: var(--color-gray-900);
+  font-weight: 900;
+  font-size: var(--font-size-lg);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+}
+
+.settled-badge {
+  display: inline-block;
+  padding: var(--space-2) var(--space-4);
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  font-weight: 700;
+  font-size: var(--font-size-base);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+}
+
+.no-settlements-row {
+  text-align: center;
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-gray-600);
+  padding: var(--space-10) !important;
+}
+
+.simplified-settlements {
+  background: var(--color-gray-50);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.settlement-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.settlement-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--color-gray-200);
+  transition: all var(--transition-base);
+}
+
+.settlement-row:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+  transform: translateX(4px);
+}
+
+.settlement-from,
+.settlement-to {
+  font-weight: 700;
+  font-size: var(--font-size-lg);
+  color: var(--color-gray-900);
+}
+
+.settlement-from {
+  text-align: right;
+  color: #ef4444;
+}
+
+.settlement-to {
+  text-align: left;
+  color: #10b981;
+}
+
+.settlement-arrow {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-primary);
+  padding: 0 var(--space-2);
+}
+
+.settlement-amount {
+  font-size: var(--font-size-xl);
+  font-weight: 900;
+  color: var(--color-gray-900);
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-full);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.no-settlements {
+  text-align: center;
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-gray-600);
+  padding: var(--space-10);
+}
+
 .matrix-table {
   width: 100%;
   border-collapse: separate;
