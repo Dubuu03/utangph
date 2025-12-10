@@ -1,78 +1,21 @@
-import { TrendingUp, ArrowRightLeft, CreditCard, Check, ArrowUpDown } from 'lucide-react'
-import { useState, useMemo } from 'react'
+import { TrendingUp, ArrowRightLeft, CreditCard, BarChart3 } from 'lucide-react'
+import { useMemo } from 'react'
 
 function ExpenseList({ expenses, members, onRefresh }) {
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
-  const [updatingPayment, setUpdatingPayment] = useState(null)
-  const [sortBy, setSortBy] = useState('date') // date, name, amount, status
-
-  const updatePaymentStatus = async (expenseId, memberId, currentStatus) => {
-    setUpdatingPayment(`${expenseId}-${memberId}`)
-    try {
-      const response = await fetch(`${API_URL}/expenses/${expenseId}/payment/${memberId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paid: !currentStatus })
-      })
-      if (response.ok) {
-        // Trigger refresh from parent
-        if (onRefresh) {
-          await onRefresh()
-        }
-      }
-    } catch (error) {
-      console.error('Error updating payment status:', error)
-      alert('Failed to update payment status. Please try again.')
-    } finally {
-      setUpdatingPayment(null)
-    }
-  }
-
+  // Helper function to check if a payment has been made
   const getPaymentStatus = (expense, memberId) => {
-    if (!expense.payments || expense.payments.length === 0) return false
+    if (!expense.payments || !Array.isArray(expense.payments)) {
+      return false
+    }
+    
     const payment = expense.payments.find(p => {
-      const pId = typeof p.memberId === 'object' ? p.memberId._id : p.memberId
-      return pId === memberId
+      const paymentMemberId = typeof p.memberId === 'object' ? p.memberId._id : p.memberId
+      return paymentMemberId === memberId
     })
+    
     return payment ? payment.paid : false
   }
 
-  const getExpensePaymentProgress = (expense) => {
-    const paidById = typeof expense.paidBy === 'object' ? expense.paidBy._id : expense.paidBy
-    let paidCount = 0
-    let totalCount = expense.splitWith.length
-    
-    expense.splitWith.forEach(member => {
-      const memberId = typeof member === 'object' ? member._id : member
-      if (memberId === paidById || getPaymentStatus(expense, memberId)) {
-        paidCount++
-      }
-    })
-    
-    return { paidCount, totalCount, percentage: (paidCount / totalCount) * 100 }
-  }
-
-  // Sort expenses based on selected criteria
-  const sortedExpenses = useMemo(() => {
-    const sorted = [...expenses]
-    
-    switch(sortBy) {
-      case 'date':
-        return sorted.sort((a, b) => new Date(b.date) - new Date(a.date))
-      case 'name':
-        return sorted.sort((a, b) => a.description.localeCompare(b.description))
-      case 'amount':
-        return sorted.sort((a, b) => b.amount - a.amount)
-      case 'status':
-        return sorted.sort((a, b) => {
-          const progressA = getExpensePaymentProgress(a).percentage
-          const progressB = getExpensePaymentProgress(b).percentage
-          return progressA - progressB
-        })
-      default:
-        return sorted
-    }
-  }, [expenses, sortBy])
   // Create a matrix showing who owes whom
   const calculateOwesMatrix = () => {
     const balances = {}
@@ -227,80 +170,6 @@ function ExpenseList({ expenses, members, onRefresh }) {
 
       <div className="card">
         <div className="card-header">
-          <h2><Check size={28} style={{ display: 'inline-block', marginRight: '8px' }} /> Payment Tracking</h2>
-          <div className="sort-controls">
-            <label><ArrowUpDown size={16} /> Sort by:</label>
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="sort-select">
-              <option value="date">Date (Newest)</option>
-              <option value="name">Name (A-Z)</option>
-              <option value="amount">Amount (High-Low)</option>
-              <option value="status">Payment Status</option>
-            </select>
-          </div>
-        </div>
-        <div className="payment-tracking-list">
-          {sortedExpenses.map(expense => {
-            const paidById = typeof expense.paidBy === 'object' ? expense.paidBy._id : expense.paidBy
-            const paidByName = typeof expense.paidBy === 'object' ? expense.paidBy.name : members.find(m => m._id === paidById)?.name || 'Unknown'
-            const sharePerPerson = expense.amount / expense.splitWith.length
-            const progress = getExpensePaymentProgress(expense)
-
-            return (
-              <div key={expense._id} className="payment-tracking-item">
-                <div className="payment-item-header">
-                  <h3>{expense.description}</h3>
-                  <div className="payment-item-info">
-                    <span className="payment-total">₱{expense.amount.toFixed(2)}</span>
-                    <span className="payment-date">{new Date(expense.date).toLocaleDateString()}</span>
-                  </div>
-                </div>
-                <div className="payment-progress-bar">
-                  <div className="progress-bar-bg">
-                    <div 
-                      className="progress-bar-fill" 
-                      style={{ width: `${progress.percentage}%` }}
-                    ></div>
-                  </div>
-                  <span className="progress-text">
-                    {progress.paidCount} of {progress.totalCount} paid
-                  </span>
-                </div>
-                <div className="payment-payer">
-                  <strong>Paid by:</strong> {paidByName}
-                </div>
-                <div className="payment-members-grid">
-                  {expense.splitWith.map(member => {
-                    const memberId = typeof member === 'object' ? member._id : member
-                    const memberName = typeof member === 'object' ? member.name : members.find(m => m._id === memberId)?.name || 'Unknown'
-                    const isPaid = getPaymentStatus(expense, memberId)
-                    const isUpdating = updatingPayment === `${expense._id}-${memberId}`
-                    const isPayer = memberId === paidById
-
-                    return (
-                      <div key={memberId} className={`payment-member-item ${isPaid ? 'paid' : 'unpaid'} ${isPayer ? 'is-payer' : ''}`}>
-                        <label className="payment-checkbox-label">
-                          <input
-                            type="checkbox"
-                            checked={isPaid || isPayer}
-                            onChange={() => !isPayer && updatePaymentStatus(expense._id, memberId, isPaid)}
-                            disabled={isUpdating || isPayer}
-                          />
-                          <span className="payment-member-name">{memberName}</span>
-                          {isPayer && <span className="payer-badge">Payer</span>}
-                        </label>
-                        <span className="payment-member-amount">₱{sharePerPerson.toFixed(2)}</span>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      <div className="card">
-        <div className="card-header">
           <h2><CreditCard size={28} style={{ display: 'inline-block', marginRight: '8px' }} /> Individual Balances</h2>
         </div>
         <div className="balance-grid">
@@ -318,6 +187,90 @@ function ExpenseList({ expenses, members, onRefresh }) {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Statistics Section */}
+      <div className="card">
+        <div className="card-header">
+          <h2><BarChart3 size={28} style={{ display: 'inline-block', marginRight: '8px' }} /> Statistics</h2>
+        </div>
+        <div className="statistics-grid">
+          <div className="stat-box">
+            <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #667eea, #764ba2)' }}>
+              <TrendingUp size={32} />
+            </div>
+            <div className="stat-details">
+              <h4>Total Expenses</h4>
+              <p className="stat-number">{expenses.length}</p>
+              <span className="stat-description">Items tracked</span>
+            </div>
+          </div>
+          
+          <div className="stat-box">
+            <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
+              <CreditCard size={32} />
+            </div>
+            <div className="stat-details">
+              <h4>Total Amount</h4>
+              <p className="stat-number">₱{expenses.reduce((sum, exp) => sum + exp.amount, 0).toFixed(2)}</p>
+              <span className="stat-description">All expenses</span>
+            </div>
+          </div>
+          
+          <div className="stat-box">
+            <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
+              <ArrowRightLeft size={32} />
+            </div>
+            <div className="stat-details">
+              <h4>Active Members</h4>
+              <p className="stat-number">{members.length}</p>
+              <span className="stat-description">Participants</span>
+            </div>
+          </div>
+          
+          <div className="stat-box">
+            <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #ec4899, #be185d)' }}>
+              <BarChart3 size={32} />
+            </div>
+            <div className="stat-details">
+              <h4>Average per Person</h4>
+              <p className="stat-number">
+                ₱{members.length > 0 ? (expenses.reduce((sum, exp) => sum + exp.amount, 0) / members.length).toFixed(2) : '0.00'}
+              </p>
+              <span className="stat-description">Per member</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Balance Distribution Chart */}
+        <div className="balance-distribution">
+          <h3>Balance Distribution</h3>
+          <div className="distribution-bars">
+            {Object.entries(balances)
+              .sort((a, b) => b[1].balance - a[1].balance)
+              .map(([id, data]) => {
+                const maxBalance = Math.max(...Object.values(balances).map(b => Math.abs(b.balance)))
+                const barWidth = maxBalance > 0 ? (Math.abs(data.balance) / maxBalance) * 100 : 0
+                
+                return (
+                  <div key={id} className="distribution-bar-item">
+                    <span className="distribution-name">{data.name}</span>
+                    <div className="distribution-bar-container">
+                      <div 
+                        className={`distribution-bar ${data.balance >= 0 ? 'positive' : 'negative'}`}
+                        style={{ width: `${barWidth}%` }}
+                      >
+                        <span className="distribution-value">
+                          {data.balance >= 0 ? '+' : ''}₱{data.balance.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })
+            }
+          </div>
         </div>
       </div>
     </div>

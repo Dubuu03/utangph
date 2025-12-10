@@ -1,10 +1,11 @@
-import { Users, Plus, ClipboardList, TrendingUp, Home, UserCircle } from 'lucide-react'
+import { Users, Plus, ClipboardList, TrendingUp, Home, UserCircle, CheckSquare } from 'lucide-react'
 
 function Sidebar({ currentPage, onPageChange }) {
   const pages = [
     { id: 'members', icon: Users, label: 'Members' },
     { id: 'add', icon: Plus, label: 'Add Items' },
     { id: 'items', icon: ClipboardList, label: 'All Items' },
+    { id: 'payments', icon: CheckSquare, label: 'Payment Tracking' },
     { id: 'settlement', icon: TrendingUp, label: 'Summary' },
     { id: 'person', icon: UserCircle, label: 'Person Summary' }
   ]

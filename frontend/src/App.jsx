@@ -5,8 +5,9 @@ import ExpenseList from './components/ExpenseList'
 import ItemsList from './components/ItemsList'
 import MemberManagement from './components/MemberManagement'
 import PersonSummary from './components/PersonSummary'
+import PaymentTracking from './components/PaymentTracking'
 import Sidebar from './components/Sidebar'
-import { Users, Plus, ClipboardList, TrendingUp, UserCircle } from 'lucide-react'
+import { Users, Plus, ClipboardList, TrendingUp, UserCircle, CheckSquare } from 'lucide-react'
 
 function App() {
   const [expenses, setExpenses] = useState([])
@@ -87,6 +88,7 @@ function App() {
             {currentPage === 'items' && <><ClipboardList size={32} style={{ display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} /> All Items</>}
             {currentPage === 'settlement' && <><TrendingUp size={32} style={{ display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} /> Summary</>}
             {currentPage === 'person' && <><UserCircle size={32} style={{ display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} /> Person Summary</>}
+            {currentPage === 'payments' && <><CheckSquare size={32} style={{ display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} /> Payment Tracking</>}
           </h1>
         </header>
 
@@ -125,6 +127,14 @@ function App() {
             <PersonSummary 
               expenses={expenses} 
               members={members}
+            />
+          )}
+          
+          {currentPage === 'payments' && (
+            <PaymentTracking 
+              expenses={expenses} 
+              members={members}
+              onRefresh={fetchExpenses}
             />
           )}
         </main>
