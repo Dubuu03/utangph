@@ -931,6 +931,35 @@ button.secondary:active {
   font-size: var(--font-size-lg);
 }
 
+.matrix-table .owes-cell {
+  background: linear-gradient(135deg, #fee2e2, #fca5a5);
+}
+
+.matrix-table .collect-cell {
+  background: linear-gradient(135deg, #d1fae5, #6ee7b7);
+}
+
+.matrix-table .net-balance-cell {
+  font-size: var(--font-size-xl);
+  border-left: 4px solid rgba(255, 255, 255, 0.4);
+}
+
+.matrix-table .net-balance-cell.positive {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.matrix-table .net-balance-cell.negative {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+}
+
+.matrix-table .net-balance-header {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  font-weight: 900;
+}
+
 /* ========================================
    PAYMENT TRACKING
    ======================================== */

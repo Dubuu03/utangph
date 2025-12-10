@@ -8,6 +8,16 @@ function PersonSummary({ expenses, members }) {
   const [showPaidExpenses, setShowPaidExpenses] = useState(true)
   const [showUnpaidExpenses, setShowUnpaidExpenses] = useState(true)
 
+  // Helper function to get payment status
+  const getPaymentStatus = (expense, memberId) => {
+    if (!expense.payments || expense.payments.length === 0) return false
+    const payment = expense.payments.find(p => {
+      const pId = typeof p.memberId === 'object' ? p.memberId._id : p.memberId
+      return pId === memberId
+    })
+    return payment ? payment.paid : false
+  }
+
   // Calculate detailed information for each member
   const memberSummaries = useMemo(() => {
     const summaries = {}
@@ -57,36 +67,43 @@ function PersonSummary({ expenses, members }) {
             userShare: sharePerPerson
           })
 
-          // If this person didn't pay, they owe the payer
+          // If this person didn't pay, they owe the payer (considering payment status)
           if (memberId !== paidById) {
-            if (!summaries[memberId].owesTo[paidById]) {
-              summaries[memberId].owesTo[paidById] = {
-                name: paidByName,
-                amount: 0,
-                expenses: []
+            const isPaid = getPaymentStatus(expense, memberId)
+            
+            // Only count as debt if not yet paid
+            if (!isPaid) {
+              if (!summaries[memberId].owesTo[paidById]) {
+                summaries[memberId].owesTo[paidById] = {
+                  name: paidByName,
+                  amount: 0,
+                  expenses: []
+                }
               }
-            }
-            summaries[memberId].owesTo[paidById].amount += sharePerPerson
-            summaries[memberId].owesTo[paidById].expenses.push({
-              description: expense.description,
-              amount: sharePerPerson,
-              date: expense.date
-            })
+              summaries[memberId].owesTo[paidById].amount += sharePerPerson
+              summaries[memberId].owesTo[paidById].expenses.push({
+                description: expense.description,
+                amount: sharePerPerson,
+                date: expense.date,
+                paid: false
+              })
 
-            // Track reverse relationship (who owes this payer)
-            if (!summaries[paidById].owedBy[memberId]) {
-              summaries[paidById].owedBy[memberId] = {
-                name: memberName,
-                amount: 0,
-                expenses: []
+              // Track reverse relationship (who owes this payer)
+              if (!summaries[paidById].owedBy[memberId]) {
+                summaries[paidById].owedBy[memberId] = {
+                  name: memberName,
+                  amount: 0,
+                  expenses: []
+                }
               }
+              summaries[paidById].owedBy[memberId].amount += sharePerPerson
+              summaries[paidById].owedBy[memberId].expenses.push({
+                description: expense.description,
+                amount: sharePerPerson,
+                date: expense.date,
+                paid: false
+              })
             }
-            summaries[paidById].owedBy[memberId].amount += sharePerPerson
-            summaries[paidById].owedBy[memberId].expenses.push({
-              description: expense.description,
-              amount: sharePerPerson,
-              date: expense.date
-            })
           }
         }
       })

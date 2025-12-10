@@ -82,7 +82,7 @@ function ExpenseList({ expenses, members, onRefresh }) {
       balances[member._id] = { name: member.name, balance: 0 }
     })
 
-    // Calculate balances from expenses
+    // Calculate balances from expenses, considering payments
     expenses.forEach(expense => {
       const sharePerPerson = expense.amount / expense.splitWith.length
       const paidById = typeof expense.paidBy === 'object' ? expense.paidBy._id : expense.paidBy
@@ -110,15 +110,24 @@ function ExpenseList({ expenses, members, onRefresh }) {
       })
     })
 
-    // Calculate who owes whom from expenses
+    // Calculate who owes whom from expenses, EXCLUDING paid amounts
     expenses.forEach(expense => {
       const sharePerPerson = expense.amount / expense.splitWith.length
       const paidById = typeof expense.paidBy === 'object' ? expense.paidBy._id : expense.paidBy
       
       expense.splitWith.forEach(member => {
         const memberId = typeof member === 'object' ? member._id : member
+        
+        // Only add to debt if:
+        // 1. Not the payer
+        // 2. Payment hasn't been marked as complete
         if (memberId !== paidById && matrix[memberId] && matrix[memberId][paidById] !== undefined) {
-          matrix[memberId][paidById] += sharePerPerson
+          const isPaid = getPaymentStatus(expense, memberId)
+          
+          // If not paid, add to debt
+          if (!isPaid) {
+            matrix[memberId][paidById] += sharePerPerson
+          }
         }
       })
     })
@@ -158,11 +167,24 @@ function ExpenseList({ expenses, members, onRefresh }) {
                   <th key={member._id}>{member.name}</th>
                 ))}
                 <th>Total Owes</th>
+                <th>Will Collect</th>
+                <th className="net-balance-header">Net Balance</th>
               </tr>
             </thead>
             <tbody>
               {members.map(fromMember => {
                 const totalOwes = Object.values(matrix[fromMember._id] || {}).reduce((sum, val) => sum + val, 0)
+                
+                // Calculate how much this person will collect (what others owe them)
+                let willCollect = 0
+                members.forEach(otherMember => {
+                  if (otherMember._id !== fromMember._id) {
+                    willCollect += matrix[otherMember._id]?.[fromMember._id] || 0
+                  }
+                })
+                
+                const netBalance = willCollect - totalOwes
+                
                 return (
                   <tr key={fromMember._id}>
                     <td className="person-name"><strong>{fromMember.name}</strong></td>
@@ -178,8 +200,20 @@ function ExpenseList({ expenses, members, onRefresh }) {
                         </td>
                       )
                     })}
-                    <td className="total-cell" data-label="Total">
-                      <strong>₱{totalOwes.toFixed(0)}</strong>
+                    <td className="total-cell owes-cell" data-label="Total Owes">
+                      <strong style={{ color: totalOwes > 0 ? '#ef4444' : '#64748b' }}>
+                        ₱{totalOwes.toFixed(0)}
+                      </strong>
+                    </td>
+                    <td className="total-cell collect-cell" data-label="Will Collect">
+                      <strong style={{ color: willCollect > 0 ? '#10b981' : '#64748b' }}>
+                        ₱{willCollect.toFixed(0)}
+                      </strong>
+                    </td>
+                    <td className={`total-cell net-balance-cell ${netBalance >= 0 ? 'positive' : 'negative'}`} data-label="Net Balance">
+                      <strong>
+                        {netBalance >= 0 ? '+' : ''}₱{netBalance.toFixed(0)}
+                      </strong>
                     </td>
                   </tr>
                 )
