@@ -108,6 +108,7 @@ function ItemsList({ expenses, members, onRefresh }) {
       const payerMatch = filterPayer === 'all' || paidById === filterPayer
       
       const splitMatch = filterSplitWith === 'all' || expense.splitWith.some(member => {
+        if (!member) return false
         const memberId = typeof member === 'object' ? member._id : member
         return memberId === filterSplitWith
       })
@@ -182,10 +183,12 @@ function ItemsList({ expenses, members, onRefresh }) {
                 isEditing ? editForm.amount : expense.amount,
                 isEditing ? editForm.splitWith.length : expense.splitWith.length
               );
-              const splitNames = expense.splitWith.map(m => {
-                const name = typeof m === 'object' ? m.name : getMemberName(m)
-                return name
-              }).join(', ')
+              const splitNames = expense.splitWith
+                .filter(m => m != null)
+                .map(m => {
+                  const name = typeof m === 'object' ? m.name : getMemberName(m)
+                  return name
+                }).join(', ')
               
               return (
                 <tr key={expense._id} className={isEditing ? 'editing-row' : ''}>
