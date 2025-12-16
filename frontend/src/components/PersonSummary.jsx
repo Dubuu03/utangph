@@ -103,6 +103,7 @@ function PersonSummary({ expenses, members, onPageChange, onRefresh }) {
 
       // Process each person involved in splitting
       expense.splitWith.forEach(member => {
+        if (!member) return
         const memberId = typeof member === 'object' ? member._id : member
         const memberName = typeof member === 'object' ? member.name : 
                           members.find(m => m._id === memberId)?.name || 'Unknown'

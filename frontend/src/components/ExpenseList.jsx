@@ -37,6 +37,7 @@ function ExpenseList({ expenses, members, onRefresh }) {
       
       // People who split the expense get debited
       expense.splitWith.forEach(member => {
+        if (!member) return
         const memberId = typeof member === 'object' ? member._id : member
         if (balances[memberId]) {
           balances[memberId].balance -= sharePerPerson
@@ -59,6 +60,7 @@ function ExpenseList({ expenses, members, onRefresh }) {
       const paidById = typeof expense.paidBy === 'object' ? expense.paidBy._id : expense.paidBy
       
       expense.splitWith.forEach(member => {
+        if (!member) return
         const memberId = typeof member === 'object' ? member._id : member
         
         // Only add to debt if:

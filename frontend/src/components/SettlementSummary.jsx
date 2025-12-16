@@ -2,7 +2,7 @@ function SettlementSummary({ expenses, members }) {
   const calculateBalances = () => {
     // Initialize balances for each member
     const balances = {}
-    members.forEach(member => {
+    members.filter(member => member != null).forEach(member => {
       balances[member._id] = { name: member.name, balance: 0 }
     })
 
@@ -20,6 +20,7 @@ function SettlementSummary({ expenses, members }) {
       
       // Everyone who splits the expense gets debited
       expense.splitWith.forEach(member => {
+        if (!member) return
         // Handle both populated and non-populated
         const memberId = typeof member === 'object' ? member._id : member
         if (balances[memberId]) {
