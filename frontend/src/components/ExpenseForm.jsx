@@ -105,8 +105,8 @@ function ExpenseForm({ members, onAddExpense }) {
     return members
   }
 
-  const calculateRoundedShare = (total, count) => {
-    return Math.ceil(total / count);
+  const calculateShare = (total, count) => {
+    return count > 0 ? total / count : 0;
   };
 
   const scrollToMember = (memberId) => {
@@ -193,7 +193,7 @@ function ExpenseForm({ members, onAddExpense }) {
                         <label className="split-label">Who will split this cost?</label>
                         <div className="split-checkboxes">
                           {availableMembers.map(targetMember => {
-                            const sharePerPerson = calculateRoundedShare(
+                            const sharePerPerson = calculateShare(
                               item.amount,
                               item.splitWith.length
                             );
