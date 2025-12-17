@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Users, Lock, Plus, ArrowRight } from 'lucide-react'
+import { Users, Lock, Plus, ArrowRight, UserPlus, Activity } from 'lucide-react'
 import './GroupSelection.css'
 
 function GroupSelection({ onGroupSelect }) {
@@ -86,95 +86,137 @@ function GroupSelection({ onGroupSelect }) {
 
   return (
     <div className="group-selection-container">
-      <div className="group-selection-card">
-        <div className="group-selection-header">
-          <h1>UtangPH</h1>
-          <p>Select a group to continue</p>
-        </div>
-
-        {!selectedGroup ? (
-          <>
-            <div className="groups-list">
-              {groups.length === 0 ? (
-                <div className="no-groups">
-                  <p>No groups available</p>
-                  <p className="hint">Create a new group to get started</p>
-                </div>
-              ) : (
-                groups.map((group) => (
-                  <div
-                    key={group._id}
-                    className="group-item"
-                    onClick={() => handleGroupClick(group)}
-                  >
-                    <div className="group-info">
-                      <h3>{group.name}</h3>
-                      <div className="group-meta">
-                        <Users size={16} />
-                        <span>{group.memberCount} {group.memberCount === 1 ? 'member' : 'members'}</span>
-                      </div>
-                    </div>
-                    <ArrowRight size={20} className="group-arrow" />
-                  </div>
-                ))
-              )}
+      {!selectedGroup ? (
+        <div className="groups-view">
+          <div className="view-header">
+            <div className="header-content">
+              <h1>UtangPH</h1>
+              <p>Select a group to manage expenses</p>
             </div>
-
             <button
-              className="create-group-button"
+              className="create-button"
               onClick={() => setShowCreateForm(true)}
             >
               <Plus size={20} />
               Create New Group
             </button>
-          </>
-        ) : (
-          <div className="password-form-container">
-            <div className="selected-group-info">
+          </div>
+
+          {groups.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">
+                <Users size={64} />
+              </div>
+              <h2>No groups yet</h2>
+              <p>Create your first group to start tracking expenses with friends</p>
+              <button
+                className="empty-cta-button"
+                onClick={() => setShowCreateForm(true)}
+              >
+                <Plus size={20} />
+                Create Your First Group
+              </button>
+            </div>
+          ) : (
+            <div className="cards-grid">
+              {groups.map((group) => (
+                <div
+                  key={group._id}
+                  className="group-card"
+                  onClick={() => handleGroupClick(group)}
+                >
+                  <div className="card-icon">
+                    <Users size={32} />
+                  </div>
+                  <div className="card-content">
+                    <h3>{group.name}</h3>
+                    <div className="card-info">
+                      <span className="member-count">
+                        {group.memberCount} {group.memberCount === 1 ? 'member' : 'members'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="card-action">
+                    <ArrowRight size={20} />
+                  </div>
+                </div>
+              ))}
+              
+              <div
+                className="group-card create-card"
+                onClick={() => setShowCreateForm(true)}
+              >
+                <div className="card-icon">
+                  <Plus size={32} />
+                </div>
+                <div className="card-content">
+                  <h3>Create New Group</h3>
+                  <p>Start tracking expenses</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="password-modal-overlay">
+          <div className="password-modal">
+            <div className="modal-icon">
+              <Lock size={48} />
+            </div>
+            
+            <div className="modal-header">
               <h2>{selectedGroup.name}</h2>
               <p>{selectedGroup.memberCount} {selectedGroup.memberCount === 1 ? 'member' : 'members'}</p>
             </div>
 
             <form onSubmit={handlePasswordSubmit} className="password-form">
-              <div className="form-group">
-                <label htmlFor="password">
-                  <Lock size={18} />
-                  Enter Password
-                </label>
+              <div className="input-wrapper">
+                <Lock size={20} className="input-icon" />
                 <input
                   type="password"
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Group password"
+                  placeholder="Enter group password"
                   required
                   autoFocus
                 />
               </div>
 
-              {error && <div className="error-message">{error}</div>}
+              {error && (
+                <div className="error-message">
+                  <span>{error}</span>
+                </div>
+              )}
 
-              <div className="form-actions">
+              <div className="modal-actions">
                 <button
                   type="button"
-                  className="btn-secondary"
+                  className="btn-cancel"
                   onClick={handleCancel}
                   disabled={loading}
                 >
-                  Back
+                  Cancel
                 </button>
                 <button
                   type="submit"
-                  className="btn-primary"
+                  className="btn-submit"
                   disabled={loading || !password}
                 >
-                  {loading ? 'Verifying...' : 'Continue'}
+                  {loading ? (
+                    <span>Verifying...</span>
+                  ) : (
+                    <>
+                      <span>Continue</span>
+                      <ArrowRight size={18} />
+                    </>
+                  )}
                 </button>
               </div>
             </form>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
