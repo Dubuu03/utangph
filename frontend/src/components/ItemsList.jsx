@@ -84,8 +84,8 @@ function ItemsList({ expenses, members, onRefresh }) {
     })
   }
 
-  const calculateRoundedShare = (total, count) => {
-    return Math.ceil(total / count);
+  const calculateShare = (total, count) => {
+    return count > 0 ? total / count : 0;
   };
 
   if (expenses.length === 0) {
@@ -179,7 +179,7 @@ function ItemsList({ expenses, members, onRefresh }) {
           <tbody>
             {filteredAndSortedExpenses.map(expense => {
               const isEditing = editingId === expense._id
-              const sharePerPerson = calculateRoundedShare(
+              const sharePerPerson = calculateShare(
                 isEditing ? editForm.amount : expense.amount,
                 isEditing ? editForm.splitWith.length : expense.splitWith.length
               );

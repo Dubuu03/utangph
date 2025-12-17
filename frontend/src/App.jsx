@@ -4,11 +4,11 @@ import ExpenseForm from './components/ExpenseForm'
 import ExpenseList from './components/ExpenseList'
 import ItemsList from './components/ItemsList'
 import MemberManagement from './components/MemberManagement'
-import PersonSummary from './components/PersonSummary'
+import Archive from './components/Archive'
 import PaymentTracking from './components/PaymentTracking'
 import QRCodeManagement from './components/QRCodeManagement'
 import Sidebar from './components/Sidebar'
-import { Users, Plus, ClipboardList, TrendingUp, UserCircle, CheckSquare, QrCode } from 'lucide-react'
+import { Users, Plus, ClipboardList, TrendingUp, Archive as ArchiveIcon, CheckSquare, QrCode } from 'lucide-react'
 
 function App() {
   const [expenses, setExpenses] = useState([])
@@ -88,7 +88,7 @@ function App() {
             {currentPage === 'add' && <><Plus size={32} style={{ display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} /> Add Items</>}
             {currentPage === 'items' && <><ClipboardList size={32} style={{ display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} /> All Items</>}
             {currentPage === 'settlement' && <><TrendingUp size={32} style={{ display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} /> Summary</>}
-            {currentPage === 'person' && <><UserCircle size={32} style={{ display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} /> Person Summary</>}
+            {currentPage === 'archive' && <><ArchiveIcon size={32} style={{ display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} /> Archive</>}
             {currentPage === 'payments' && <><CheckSquare size={32} style={{ display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} /> Payment Tracking</>}
             {currentPage === 'qrcodes' && <><QrCode size={32} style={{ display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} /> QR Codes</>}
           </h1>
@@ -125,11 +125,10 @@ function App() {
             />
           )}
           
-          {currentPage === 'person' && (
-            <PersonSummary 
+          {currentPage === 'archive' && (
+            <Archive 
               expenses={expenses} 
               members={members}
-              onPageChange={setCurrentPage}
               onRefresh={fetchExpenses}
             />
           )}
