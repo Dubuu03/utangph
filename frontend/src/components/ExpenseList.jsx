@@ -1,9 +1,11 @@
-import { TrendingUp, ArrowRightLeft, CreditCard, BarChart3, CheckCircle, X } from 'lucide-react'
+import { TrendingUp, ArrowRightLeft, CreditCard, BarChart3, CheckCircle, X, List } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 function ExpenseList({ expenses, members, onRefresh }) {
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+  const [selectionModal, setSelectionModal] = useState(null)
   const [paymentModal, setPaymentModal] = useState(null)
+  const [transactionsModal, setTransactionsModal] = useState(null)
   const [processing, setProcessing] = useState(false)
 
   // Helper function to check if a payment has been made
@@ -95,6 +97,51 @@ function ExpenseList({ expenses, members, onRefresh }) {
       fromName: fromName,
       toName: toName
     })
+  }
+
+  const getTransactionsBetween = (fromMemberId, toMemberId) => {
+    // Find all expenses where toMember paid and fromMember is in splitWith (fromMember owes toMember)
+    const fromOwesToTransactions = expenses.filter(expense => {
+      const paidById = typeof expense.paidBy === 'object' ? expense.paidBy._id : expense.paidBy
+      if (paidById !== toMemberId) return false
+      
+      return expense.splitWith.some(member => {
+        const memberId = typeof member === 'object' ? member._id : member
+        return memberId === fromMemberId && !getPaymentStatus(expense, memberId)
+      })
+    }).map(expense => {
+      const sharePerPerson = expense.amount / expense.splitWith.length
+      return {
+        ...expense,
+        shareAmount: sharePerPerson,
+        direction: 'owes' // fromMember owes toMember
+      }
+    })
+
+    // Find all expenses where fromMember paid and toMember is in splitWith (toMember owes fromMember)
+    const toOwesFromTransactions = expenses.filter(expense => {
+      const paidById = typeof expense.paidBy === 'object' ? expense.paidBy._id : expense.paidBy
+      if (paidById !== fromMemberId) return false
+      
+      return expense.splitWith.some(member => {
+        const memberId = typeof member === 'object' ? member._id : member
+        return memberId === toMemberId && !getPaymentStatus(expense, memberId)
+      })
+    }).map(expense => {
+      const sharePerPerson = expense.amount / expense.splitWith.length
+      return {
+        ...expense,
+        shareAmount: sharePerPerson,
+        direction: 'receives' // fromMember receives from toMember
+      }
+    })
+
+    return {
+      fromOwesTo: fromOwesToTransactions,
+      toOwesFrom: toOwesFromTransactions,
+      totalOwed: fromOwesToTransactions.reduce((sum, exp) => sum + exp.shareAmount, 0),
+      totalReceives: toOwesFromTransactions.reduce((sum, exp) => sum + exp.shareAmount, 0)
+    }
   }
 
   const handleMarkAsPaid = async () => {
@@ -209,86 +256,6 @@ function ExpenseList({ expenses, members, onRefresh }) {
         </div>
       </div>
 
-      {/* Simplified Settlement Table */}
-      <div className="card">
-        <div className="card-header">
-          <h2><ArrowRightLeft size={28} style={{ display: 'inline-block', marginRight: '8px' }} /> Simplified Settlements</h2>
-        </div>
-        <div className="summary-section">
-          <p className="settlement-description">Net amounts after offsetting mutual debts (who owes whom)</p>
-          <div className="settlement-legend">
-            <div className="legend-item">
-              <span className="legend-box owes"></span>
-              <span>Red cells = The person in that ROW owes money to the person in that COLUMN</span>
-            </div>
-            <div className="legend-item">
-              <span className="legend-box receives"></span>
-              <span>Green cells = The person in that ROW will RECEIVE money from the person in that COLUMN</span>
-            </div>
-          </div>
-          <div className="table-container">
-            <table className="settlement-matrix-table">
-              <thead>
-                <tr>
-                  <th>Person</th>
-                  {members.map(member => (
-                    <th key={member._id}>{member.name}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {members.map(fromMember => {
-                  return (
-                    <tr key={fromMember._id}>
-                      <td className="person-name"><strong>{fromMember.name}</strong></td>
-                      {members.map(toMember => {
-                        if (fromMember._id === toMember._id) {
-                          return <td key={toMember._id} className="same-person">-</td>
-                        }
-
-                        const fromOwesTo = matrix[fromMember._id]?.[toMember._id] || 0
-                        const toOwesFrom = matrix[toMember._id]?.[fromMember._id] || 0
-                        const netAmount = fromOwesTo - toOwesFrom
-
-                        // Show net amount only if fromMember owes toMember after offset
-                        if (netAmount > 0.01) {
-                          return (
-                            <td key={toMember._id} className="net-debt-cell owes">
-                              <div className="cell-content">
-                                <span>₱{netAmount.toFixed(2)}</span>
-                                <button
-                                  className="pay-btn-small"
-                                  onClick={() => handlePayClick(fromMember._id, toMember._id, netAmount, fromMember.name, toMember.name)}
-                                  title="Mark as paid"
-                                >
-                                  <CheckCircle size={14} />
-                                </button>
-                              </div>
-                            </td>
-                          )
-                        } else if (netAmount < -0.01) {
-                          return (
-                            <td key={toMember._id} className="net-debt-cell receives">
-                              ₱{Math.abs(netAmount).toFixed(2)}
-                            </td>
-                          )
-                        } else {
-                          return (
-                            <td key={toMember._id} className="net-debt-cell settled">
-                              ✓
-                            </td>
-                          )
-                        }
-                      })}
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
       {/* Who Owes Whom Table */}
       <div className="card">
         <div className="card-header">
@@ -362,30 +329,349 @@ function ExpenseList({ expenses, members, onRefresh }) {
         </div>
       </div>
 
-      {/* Individual Balances */}
+      {/* Simplified Settlement Table */}
       <div className="card">
         <div className="card-header">
-          <h2><CreditCard size={28} style={{ display: 'inline-block', marginRight: '8px' }} /> Individual Balances</h2>
+          <h2><ArrowRightLeft size={28} style={{ display: 'inline-block', marginRight: '8px' }} /> Simplified Settlements</h2>
         </div>
-        <div className="balance-grid">
-          {Object.entries(balances)
-            .sort((a, b) => b[1].balance - a[1].balance)
-            .map(([id, data]) => (
-            <div key={id} className="balance-card">
-              <div className="balance-name">{data.name}</div>
-              <div 
-                className="balance-amount" 
-                style={{ color: data.balance >= 0 ? '#10b981' : '#ef4444' }}
-              >
-                {data.balance >= 0 ? '+' : ''}₱{data.balance.toFixed(2)}
-              </div>
-              <div className="balance-status">
-                {data.balance > 0.01 ? 'Should receive' : data.balance < -0.01 ? 'Owes' : 'All settled'}
-              </div>
+        <div className="summary-section">
+          <p className="settlement-description">Net amounts after offsetting mutual debts (who owes whom)</p>
+          <div className="settlement-legend">
+            <div className="legend-item">
+              <span className="legend-box owes"></span>
+              <span>Red cells = The person in that ROW owes money to the person in that COLUMN</span>
             </div>
-          ))}
+            <div className="legend-item">
+              <span className="legend-box receives"></span>
+              <span>Green cells = The person in that ROW will RECEIVE money from the person in that COLUMN</span>
+            </div>
+          </div>
+          <div className="table-container">
+            <table className="settlement-matrix-table">
+              <thead>
+                <tr>
+                  <th>Person</th>
+                  {members.map(member => (
+                    <th key={member._id}>{member.name}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {members.map(fromMember => {
+                  return (
+                    <tr key={fromMember._id}>
+                      <td className="person-name"><strong>{fromMember.name}</strong></td>
+                      {members.map(toMember => {
+                        if (fromMember._id === toMember._id) {
+                          return <td key={toMember._id} className="same-person">-</td>
+                        }
+
+                        const fromOwesTo = matrix[fromMember._id]?.[toMember._id] || 0
+                        const toOwesFrom = matrix[toMember._id]?.[fromMember._id] || 0
+                        const netAmount = fromOwesTo - toOwesFrom
+
+                        // Show net amount only if fromMember owes toMember after offset
+                        if (netAmount > 0.01) {
+                          return (
+                            <td key={toMember._id} className="net-debt-cell owes">
+                              <div className="cell-content">
+                                <span>₱{netAmount.toFixed(2)}</span>
+                                <button
+                                  className="pay-btn-small"
+                                  onClick={() => setSelectionModal({
+                                    fromId: fromMember._id,
+                                    toId: toMember._id,
+                                    amount: netAmount,
+                                    fromName: fromMember.name,
+                                    toName: toMember.name
+                                  })}
+                                  title="View options"
+                                >
+                                  <CheckCircle size={14} />
+                                </button>
+                              </div>
+                            </td>
+                          )
+                        } else if (netAmount < -0.01) {
+                          return (
+                            <td key={toMember._id} className="net-debt-cell receives">
+                              ₱{Math.abs(netAmount).toFixed(2)}
+                            </td>
+                          )
+                        } else {
+                          return (
+                            <td key={toMember._id} className="net-debt-cell settled">
+                              ✓
+                            </td>
+                          )
+                        }
+                      })}
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
+
+      {/* Total Expenses by Member */}
+      <div className="card">
+        <div className="card-header">
+          <h2><CreditCard size={28} style={{ display: 'inline-block', marginRight: '8px' }} /> Total Expenses by Member</h2>
+        </div>
+        <div className="balance-grid">
+          {(() => {
+            // Calculate total expenses paid by each member
+            const memberExpenses = {}
+            members.forEach(member => {
+              memberExpenses[member._id] = {
+                name: member.name,
+                totalPaid: 0
+              }
+            })
+            
+            expenses.forEach(expense => {
+              const paidById = typeof expense.paidBy === 'object' ? expense.paidBy._id : expense.paidBy
+              if (memberExpenses[paidById]) {
+                memberExpenses[paidById].totalPaid += expense.amount
+              }
+            })
+            
+            return Object.entries(memberExpenses)
+              .sort((a, b) => b[1].totalPaid - a[1].totalPaid)
+              .map(([id, data]) => (
+                <div key={id} className="balance-card">
+                  <div className="balance-name">{data.name}</div>
+                  <div 
+                    className="balance-amount" 
+                    style={{ color: '#667eea' }}
+                  >
+                    ₱{data.totalPaid.toFixed(2)}
+                  </div>
+                  <div className="balance-status">
+                    Total paid
+                  </div>
+                </div>
+              ))
+          })()}
+        </div>
+      </div>
+
+      {/* Selection Modal */}
+      {selectionModal && (
+        <div className="modal-overlay" onClick={() => setSelectionModal(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Payment Options</h2>
+              <button
+                className="modal-close"
+                onClick={() => setSelectionModal(null)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="payment-details">
+                <div className="detail-row">
+                  <span>From:</span>
+                  <strong>{selectionModal.fromName}</strong>
+                </div>
+                <div className="detail-row">
+                  <span>To:</span>
+                  <strong>{selectionModal.toName}</strong>
+                </div>
+                <div className="detail-row">
+                  <span>Amount:</span>
+                  <strong style={{ color: 'var(--color-primary)', fontSize: '1.25rem' }}>
+                    ₱{selectionModal.amount.toFixed(2)}
+                  </strong>
+                </div>
+              </div>
+
+              <p className="modal-question" style={{ marginTop: '1.5rem', marginBottom: '1rem' }}>What would you like to do?</p>
+            </div>
+
+            <div className="modal-actions" style={{ flexDirection: 'column', gap: '0.75rem' }}>
+              <button
+                className="btn-secondary"
+                onClick={() => {
+                  const transactions = getTransactionsBetween(selectionModal.fromId, selectionModal.toId)
+                  setTransactionsModal({
+                    ...selectionModal,
+                    transactions
+                  })
+                  setSelectionModal(null)
+                }}
+                style={{ width: '100%', background: '#667eea', color: 'white', border: 'none' }}
+              >
+                <List size={18} />
+                View Transactions
+              </button>
+              <button
+                className="btn-primary"
+                onClick={() => {
+                  setPaymentModal(selectionModal)
+                  setSelectionModal(null)
+                }}
+                style={{ width: '100%' }}
+              >
+                <CheckCircle size={18} />
+                Mark as Paid
+              </button>
+              <button
+                className="btn-secondary"
+                onClick={() => setSelectionModal(null)}
+                style={{ width: '100%' }}
+              >
+                <X size={18} />
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Transactions Modal */}
+      {transactionsModal && (
+        <div className="modal-overlay" onClick={() => setTransactionsModal(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '900px', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+            <div className="modal-header">
+              <h2>Transaction Details</h2>
+              <button
+                className="modal-close"
+                onClick={() => setTransactionsModal(null)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="modal-body" style={{ overflowY: 'auto', flex: 1 }}>
+              <div className="payment-details" style={{ marginBottom: '1.5rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px' }}>
+                <div className="detail-row" style={{ flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.95rem', color: '#64748b' }}>Net Settlement:</span>
+                  <strong style={{ color: 'var(--color-primary)', fontSize: '1.3rem', textAlign: 'center' }}>
+                    {transactionsModal.fromName} pays {transactionsModal.toName}: ₱{transactionsModal.amount.toFixed(2)}
+                  </strong>
+                </div>
+              </div>
+
+              {/* From owes To section */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h3 style={{ color: '#ef4444', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
+                  {transactionsModal.fromName} owes {transactionsModal.toName}: ₱{transactionsModal.transactions.totalOwed.toFixed(2)}
+                </h3>
+                {transactionsModal.transactions.fromOwesTo.length > 0 ? (
+                  <div className="table-container" style={{ maxHeight: '200px', overflow: 'auto', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                    <table className="expense-table" style={{ fontSize: '0.8rem' }}>
+                      <thead>
+                        <tr>
+                          <th style={{ padding: '0.5rem' }}>Date</th>
+                          <th style={{ padding: '0.5rem' }}>Item</th>
+                          <th style={{ padding: '0.5rem' }}>Total</th>
+                          <th style={{ padding: '0.5rem' }}>Split</th>
+                          <th style={{ padding: '0.5rem' }}>Share</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {transactionsModal.transactions.fromOwesTo.map(expense => (
+                          <tr key={expense._id}>
+                            <td style={{ padding: '0.5rem' }}>{new Date(expense.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</td>
+                            <td style={{ padding: '0.5rem' }}>{expense.description}</td>
+                            <td className="amount" style={{ padding: '0.5rem' }}>₱{expense.amount.toFixed(2)}</td>
+                            <td style={{ padding: '0.5rem', textAlign: 'center' }}>{expense.splitWith.length}</td>
+                            <td className="amount" style={{ padding: '0.5rem', color: '#ef4444', fontWeight: '600' }}>
+                              ₱{expense.shareAmount.toFixed(2)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p style={{ color: '#64748b', fontStyle: 'italic', padding: '0.5rem' }}>No transactions</p>
+                )}
+              </div>
+
+              {/* To owes From section */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h3 style={{ color: '#10b981', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
+                  {transactionsModal.toName} owes {transactionsModal.fromName}: ₱{transactionsModal.transactions.totalReceives.toFixed(2)}
+                </h3>
+                {transactionsModal.transactions.toOwesFrom.length > 0 ? (
+                  <div className="table-container" style={{ maxHeight: '200px', overflow: 'auto', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                    <table className="expense-table" style={{ fontSize: '0.8rem' }}>
+                      <thead>
+                        <tr>
+                          <th style={{ padding: '0.5rem' }}>Date</th>
+                          <th style={{ padding: '0.5rem' }}>Item</th>
+                          <th style={{ padding: '0.5rem' }}>Total</th>
+                          <th style={{ padding: '0.5rem' }}>Split</th>
+                          <th style={{ padding: '0.5rem' }}>Share</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {transactionsModal.transactions.toOwesFrom.map(expense => (
+                          <tr key={expense._id}>
+                            <td style={{ padding: '0.5rem' }}>{new Date(expense.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</td>
+                            <td style={{ padding: '0.5rem' }}>{expense.description}</td>
+                            <td className="amount" style={{ padding: '0.5rem' }}>₱{expense.amount.toFixed(2)}</td>
+                            <td style={{ padding: '0.5rem', textAlign: 'center' }}>{expense.splitWith.length}</td>
+                            <td className="amount" style={{ padding: '0.5rem', color: '#10b981', fontWeight: '600' }}>
+                              ₱{expense.shareAmount.toFixed(2)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p style={{ color: '#64748b', fontStyle: 'italic', padding: '0.5rem' }}>No transactions</p>
+                )}
+              </div>
+
+              {/* Net calculation */}
+              <div style={{ borderTop: '2px solid var(--color-primary)', paddingTop: '1rem', marginTop: '1rem', background: '#f8fafc', padding: '1rem', borderRadius: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.9rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>{transactionsModal.fromName} owes:</span>
+                    <strong style={{ color: '#ef4444' }}>₱{transactionsModal.transactions.totalOwed.toFixed(2)}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>{transactionsModal.toName} owes:</span>
+                    <strong style={{ color: '#10b981' }}>-₱{transactionsModal.transactions.totalReceives.toFixed(2)}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '2px solid #e2e8f0', paddingTop: '0.75rem', marginTop: '0.5rem', fontSize: '1.1rem' }}>
+                    <strong>Net Amount:</strong>
+                    <strong style={{ color: 'var(--color-primary)' }}>₱{(transactionsModal.transactions.totalOwed - transactionsModal.transactions.totalReceives).toFixed(2)}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-actions" style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
+              <button
+                className="btn-secondary"
+                onClick={() => setTransactionsModal(null)}
+              >
+                <X size={18} />
+                Close
+              </button>
+              <button
+                className="btn-primary"
+                onClick={() => {
+                  setPaymentModal(transactionsModal)
+                  setTransactionsModal(null)
+                }}
+              >
+                <CheckCircle size={18} />
+                Mark as Paid
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Payment Confirmation Modal */}
       {paymentModal && (
