@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ClipboardList, Edit2, Trash2, Check, X, ArrowUpDown } from 'lucide-react'
+import { ClipboardList, Edit2, Trash2, Check, X, ArrowUpDown, Search } from 'lucide-react'
 
 function ItemsList({ expenses, members, onRefresh }) {
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
@@ -8,6 +8,7 @@ function ItemsList({ expenses, members, onRefresh }) {
   const [filterPayer, setFilterPayer] = useState('all')
   const [filterSplitWith, setFilterSplitWith] = useState('all')
   const [sortBy, setSortBy] = useState('date') // date, name, amount
+  const [searchQuery, setSearchQuery] = useState('')
 
   const getMemberName = (memberId) => {
     const member = members.find(m => m._id === memberId)
@@ -84,8 +85,8 @@ function ItemsList({ expenses, members, onRefresh }) {
     })
   }
 
-  const calculateRoundedShare = (total, count) => {
-    return Math.ceil(total / count);
+  const calculateShare = (total, count) => {
+    return count > 0 ? total / count : 0;
   };
 
   if (expenses.length === 0) {
@@ -113,7 +114,16 @@ function ItemsList({ expenses, members, onRefresh }) {
         return memberId === filterSplitWith
       })
       
-      return payerMatch && splitMatch
+      // Search filter
+      const searchMatch = searchQuery === '' || 
+        expense.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        getMemberName(paidById).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        expense.splitWith.some(member => {
+          const memberName = typeof member === 'object' ? member.name : getMemberName(member)
+          return memberName.toLowerCase().includes(searchQuery.toLowerCase())
+        })
+      
+      return payerMatch && splitMatch && searchMatch
     })
     
     // Then sort
@@ -135,27 +145,27 @@ function ItemsList({ expenses, members, onRefresh }) {
         <div className="card-header">
           <h2><ClipboardList size={28} style={{ display: 'inline-block', marginRight: '8px' }} /> All Items</h2>
           <div className="header-controls">
-            <div className="filter-group">
-              <label>Paid By:</label>
-              <select value={filterPayer} onChange={(e) => setFilterPayer(e.target.value)} className="filter-select">
+            <div className="filter-group clickable">
+              <label htmlFor="filter-payer">Paid By:</label>
+              <select id="filter-payer" value={filterPayer} onChange={(e) => setFilterPayer(e.target.value)} className="filter-select">
                 <option value="all">All Payers</option>
                 {members.map(member => (
                   <option key={member._id} value={member._id}>{member.name}</option>
                 ))}
               </select>
             </div>
-            <div className="filter-group">
-              <label>Split With:</label>
-              <select value={filterSplitWith} onChange={(e) => setFilterSplitWith(e.target.value)} className="filter-select">
+            <div className="filter-group clickable">
+              <label htmlFor="filter-split">Split With:</label>
+              <select id="filter-split" value={filterSplitWith} onChange={(e) => setFilterSplitWith(e.target.value)} className="filter-select">
                 <option value="all">All Members</option>
                 {members.map(member => (
                   <option key={member._id} value={member._id}>{member.name}</option>
                 ))}
               </select>
             </div>
-            <div className="filter-group">
-              <label><ArrowUpDown size={16} /> Sort:</label>
-              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="filter-select">
+            <div className="filter-group clickable">
+              <label htmlFor="filter-sort"><ArrowUpDown size={16} /> Sort:</label>
+              <select id="filter-sort" value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="filter-select">
                 <option value="date">Date (Newest)</option>
                 <option value="name">Name (A-Z)</option>
                 <option value="amount">Amount (High-Low)</option>
@@ -164,13 +174,35 @@ function ItemsList({ expenses, members, onRefresh }) {
             <span className="item-count">{filteredAndSortedExpenses.length} {filteredAndSortedExpenses.length === 1 ? 'item' : 'items'}</span>
           </div>
         </div>
+        <div className="search-bar-container">
+          <div className="search-box-full">
+            <Search size={20} />
+            <input
+              type="text"
+              placeholder="Search items by description or member name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input-full"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="search-clear-btn"
+                aria-label="Clear search"
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
+        </div>
         <div className="table-container">
         <table className="expense-table">
           <thead>
             <tr>
               <th>Date</th>
               <th>Item</th>
-              <th>Total</th>
+              <th>Paid By</th>
+              <th>Amount</th>
               <th>Split Between</th>
               <th>Each Pays</th>
               <th>Actions</th>
@@ -179,7 +211,7 @@ function ItemsList({ expenses, members, onRefresh }) {
           <tbody>
             {filteredAndSortedExpenses.map(expense => {
               const isEditing = editingId === expense._id
-              const sharePerPerson = calculateRoundedShare(
+              const sharePerPerson = calculateShare(
                 isEditing ? editForm.amount : expense.amount,
                 isEditing ? editForm.splitWith.length : expense.splitWith.length
               );
@@ -205,7 +237,10 @@ function ItemsList({ expenses, members, onRefresh }) {
                       expense.description
                     )}
                   </td>
-                  <td data-label="Total" className="amount">
+                  <td data-label="Paid By" className="paid-by-cell">
+                    {getMemberName(typeof expense.paidBy === 'object' ? expense.paidBy._id : expense.paidBy)}
+                  </td>
+                  <td data-label="Amount" className="amount">
                     {isEditing ? (
                       <input
                         type="number"

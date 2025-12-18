@@ -1,31 +1,50 @@
 import { useState, useEffect } from 'react'
 import './App.css'
+import GroupSelection from './components/GroupSelection'
 import ExpenseForm from './components/ExpenseForm'
 import ExpenseList from './components/ExpenseList'
 import ItemsList from './components/ItemsList'
 import MemberManagement from './components/MemberManagement'
-import PersonSummary from './components/PersonSummary'
+import Archive from './components/Archive'
 import PaymentTracking from './components/PaymentTracking'
 import QRCodeManagement from './components/QRCodeManagement'
 import Sidebar from './components/Sidebar'
-import { Users, Plus, ClipboardList, TrendingUp, UserCircle, CheckSquare, QrCode } from 'lucide-react'
+import { Users, Plus, ClipboardList, TrendingUp, Archive as ArchiveIcon, CheckSquare, QrCode } from 'lucide-react'
 
 function App() {
+  const [currentGroup, setCurrentGroup] = useState(null)
   const [expenses, setExpenses] = useState([])
   const [members, setMembers] = useState([])
   const [currentPage, setCurrentPage] = useState('settlement')
 
   useEffect(() => {
-    // Fetch members and expenses from backend
-    fetchMembers()
-    fetchExpenses()
+    // Check if user has a stored group
+    const storedGroup = localStorage.getItem('currentGroup')
+    if (storedGroup) {
+      try {
+        const group = JSON.parse(storedGroup)
+        setCurrentGroup(group)
+      } catch (error) {
+        console.error('Error parsing stored group:', error)
+        localStorage.removeItem('currentGroup')
+      }
+    }
   }, [])
+
+  useEffect(() => {
+    // Fetch members and expenses when group is selected
+    if (currentGroup) {
+      fetchMembers()
+      fetchExpenses()
+    }
+  }, [currentGroup])
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 
   const fetchMembers = async () => {
+    if (!currentGroup) return
     try {
-      const response = await fetch(`${API_URL}/members`)
+      const response = await fetch(`${API_URL}/members?groupId=${currentGroup._id}`)
       if (response.ok) {
         const data = await response.json()
         setMembers(data)
@@ -36,8 +55,9 @@ function App() {
   }
 
   const fetchExpenses = async () => {
+    if (!currentGroup) return
     try {
-      const response = await fetch(`${API_URL}/expenses`)
+      const response = await fetch(`${API_URL}/expenses?groupId=${currentGroup._id}`)
       if (response.ok) {
         const data = await response.json()
         setExpenses(data)
@@ -52,7 +72,7 @@ function App() {
       const response = await fetch(`${API_URL}/expenses`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(expense)
+        body: JSON.stringify({ ...expense, groupId: currentGroup._id })
       })
       if (response.ok) {
         fetchExpenses()
@@ -67,7 +87,7 @@ function App() {
       const response = await fetch(`${API_URL}/members`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(member)
+        body: JSON.stringify({ ...member, groupId: currentGroup._id })
       })
       if (response.ok) {
         fetchMembers()
@@ -77,9 +97,31 @@ function App() {
     }
   }
 
+  const handleGroupSelect = (group) => {
+    setCurrentGroup(group)
+    localStorage.setItem('currentGroup', JSON.stringify(group))
+  }
+
+  const handleLogout = () => {
+    setCurrentGroup(null)
+    setMembers([])
+    setExpenses([])
+    localStorage.removeItem('currentGroup')
+  }
+
+  // Show group selection if no group is selected
+  if (!currentGroup) {
+    return <GroupSelection onGroupSelect={handleGroupSelect} />
+  }
+
   return (
     <div className="app">
-      <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
+      <Sidebar 
+        currentPage={currentPage} 
+        onPageChange={setCurrentPage}
+        currentGroup={currentGroup}
+        onLogout={handleLogout}
+      />
       
       <div className="main-container">
         <header className="app-header">
@@ -88,7 +130,7 @@ function App() {
             {currentPage === 'add' && <><Plus size={32} style={{ display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} /> Add Items</>}
             {currentPage === 'items' && <><ClipboardList size={32} style={{ display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} /> All Items</>}
             {currentPage === 'settlement' && <><TrendingUp size={32} style={{ display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} /> Summary</>}
-            {currentPage === 'person' && <><UserCircle size={32} style={{ display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} /> Person Summary</>}
+            {currentPage === 'archive' && <><ArchiveIcon size={32} style={{ display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} /> Archive</>}
             {currentPage === 'payments' && <><CheckSquare size={32} style={{ display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} /> Payment Tracking</>}
             {currentPage === 'qrcodes' && <><QrCode size={32} style={{ display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} /> QR Codes</>}
           </h1>
@@ -125,11 +167,10 @@ function App() {
             />
           )}
           
-          {currentPage === 'person' && (
-            <PersonSummary 
+          {currentPage === 'archive' && (
+            <Archive 
               expenses={expenses} 
               members={members}
-              onPageChange={setCurrentPage}
               onRefresh={fetchExpenses}
             />
           )}
