@@ -536,7 +536,7 @@ function ExpenseList({ expenses, members, onRefresh }) {
       {/* Transactions Modal */}
       {transactionsModal && (
         <div className="modal-overlay" onClick={() => setTransactionsModal(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '900px', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
             <div className="modal-header">
               <h2>Transaction Details</h2>
               <button
@@ -547,41 +547,41 @@ function ExpenseList({ expenses, members, onRefresh }) {
               </button>
             </div>
             
-            <div className="modal-body">
+            <div className="modal-body" style={{ overflowY: 'auto', flex: 1 }}>
               <div className="payment-details" style={{ marginBottom: '1.5rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px' }}>
-                <div className="detail-row">
-                  <span style={{ fontSize: '1rem' }}>Net Settlement:</span>
-                  <strong style={{ color: 'var(--color-primary)', fontSize: '1.5rem' }}>
+                <div className="detail-row" style={{ flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.95rem', color: '#64748b' }}>Net Settlement:</span>
+                  <strong style={{ color: 'var(--color-primary)', fontSize: '1.3rem', textAlign: 'center' }}>
                     {transactionsModal.fromName} pays {transactionsModal.toName}: ₱{transactionsModal.amount.toFixed(2)}
                   </strong>
                 </div>
               </div>
 
               {/* From owes To section */}
-              <div style={{ marginBottom: '2rem' }}>
-                <h3 style={{ color: '#ef4444', marginBottom: '0.75rem', fontSize: '1.1rem' }}>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h3 style={{ color: '#ef4444', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
                   {transactionsModal.fromName} owes {transactionsModal.toName}: ₱{transactionsModal.transactions.totalOwed.toFixed(2)}
                 </h3>
                 {transactionsModal.transactions.fromOwesTo.length > 0 ? (
-                  <div className="table-container" style={{ maxHeight: '250px', overflow: 'auto' }}>
-                    <table className="expense-table" style={{ fontSize: '0.85rem' }}>
+                  <div className="table-container" style={{ maxHeight: '200px', overflow: 'auto', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                    <table className="expense-table" style={{ fontSize: '0.8rem' }}>
                       <thead>
                         <tr>
-                          <th>Date</th>
-                          <th>Item</th>
-                          <th>Total</th>
-                          <th>Split</th>
-                          <th>Share</th>
+                          <th style={{ padding: '0.5rem' }}>Date</th>
+                          <th style={{ padding: '0.5rem' }}>Item</th>
+                          <th style={{ padding: '0.5rem' }}>Total</th>
+                          <th style={{ padding: '0.5rem' }}>Split</th>
+                          <th style={{ padding: '0.5rem' }}>Share</th>
                         </tr>
                       </thead>
                       <tbody>
                         {transactionsModal.transactions.fromOwesTo.map(expense => (
                           <tr key={expense._id}>
-                            <td>{new Date(expense.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</td>
-                            <td>{expense.description}</td>
-                            <td className="amount">₱{expense.amount.toFixed(2)}</td>
-                            <td>{expense.splitWith.length}</td>
-                            <td className="amount" style={{ color: '#ef4444', fontWeight: '600' }}>
+                            <td style={{ padding: '0.5rem' }}>{new Date(expense.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</td>
+                            <td style={{ padding: '0.5rem' }}>{expense.description}</td>
+                            <td className="amount" style={{ padding: '0.5rem' }}>₱{expense.amount.toFixed(2)}</td>
+                            <td style={{ padding: '0.5rem', textAlign: 'center' }}>{expense.splitWith.length}</td>
+                            <td className="amount" style={{ padding: '0.5rem', color: '#ef4444', fontWeight: '600' }}>
                               ₱{expense.shareAmount.toFixed(2)}
                             </td>
                           </tr>
@@ -596,29 +596,29 @@ function ExpenseList({ expenses, members, onRefresh }) {
 
               {/* To owes From section */}
               <div style={{ marginBottom: '1.5rem' }}>
-                <h3 style={{ color: '#10b981', marginBottom: '0.75rem', fontSize: '1.1rem' }}>
+                <h3 style={{ color: '#10b981', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
                   {transactionsModal.toName} owes {transactionsModal.fromName}: ₱{transactionsModal.transactions.totalReceives.toFixed(2)}
                 </h3>
                 {transactionsModal.transactions.toOwesFrom.length > 0 ? (
-                  <div className="table-container" style={{ maxHeight: '250px', overflow: 'auto' }}>
-                    <table className="expense-table" style={{ fontSize: '0.85rem' }}>
+                  <div className="table-container" style={{ maxHeight: '200px', overflow: 'auto', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                    <table className="expense-table" style={{ fontSize: '0.8rem' }}>
                       <thead>
                         <tr>
-                          <th>Date</th>
-                          <th>Item</th>
-                          <th>Total</th>
-                          <th>Split</th>
-                          <th>Share</th>
+                          <th style={{ padding: '0.5rem' }}>Date</th>
+                          <th style={{ padding: '0.5rem' }}>Item</th>
+                          <th style={{ padding: '0.5rem' }}>Total</th>
+                          <th style={{ padding: '0.5rem' }}>Split</th>
+                          <th style={{ padding: '0.5rem' }}>Share</th>
                         </tr>
                       </thead>
                       <tbody>
                         {transactionsModal.transactions.toOwesFrom.map(expense => (
                           <tr key={expense._id}>
-                            <td>{new Date(expense.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</td>
-                            <td>{expense.description}</td>
-                            <td className="amount">₱{expense.amount.toFixed(2)}</td>
-                            <td>{expense.splitWith.length}</td>
-                            <td className="amount" style={{ color: '#10b981', fontWeight: '600' }}>
+                            <td style={{ padding: '0.5rem' }}>{new Date(expense.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</td>
+                            <td style={{ padding: '0.5rem' }}>{expense.description}</td>
+                            <td className="amount" style={{ padding: '0.5rem' }}>₱{expense.amount.toFixed(2)}</td>
+                            <td style={{ padding: '0.5rem', textAlign: 'center' }}>{expense.splitWith.length}</td>
+                            <td className="amount" style={{ padding: '0.5rem', color: '#10b981', fontWeight: '600' }}>
                               ₱{expense.shareAmount.toFixed(2)}
                             </td>
                           </tr>
@@ -632,17 +632,17 @@ function ExpenseList({ expenses, members, onRefresh }) {
               </div>
 
               {/* Net calculation */}
-              <div style={{ borderTop: '2px solid var(--color-primary)', paddingTop: '1rem', marginTop: '1rem' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '1rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ borderTop: '2px solid var(--color-primary)', paddingTop: '1rem', marginTop: '1rem', background: '#f8fafc', padding: '1rem', borderRadius: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.9rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span>{transactionsModal.fromName} owes:</span>
                     <strong style={{ color: '#ef4444' }}>₱{transactionsModal.transactions.totalOwed.toFixed(2)}</strong>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span>{transactionsModal.toName} owes:</span>
                     <strong style={{ color: '#10b981' }}>-₱{transactionsModal.transactions.totalReceives.toFixed(2)}</strong>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #e2e8f0', paddingTop: '0.5rem', fontSize: '1.15rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '2px solid #e2e8f0', paddingTop: '0.75rem', marginTop: '0.5rem', fontSize: '1.1rem' }}>
                     <strong>Net Amount:</strong>
                     <strong style={{ color: 'var(--color-primary)' }}>₱{(transactionsModal.transactions.totalOwed - transactionsModal.transactions.totalReceives).toFixed(2)}</strong>
                   </div>
@@ -650,7 +650,7 @@ function ExpenseList({ expenses, members, onRefresh }) {
               </div>
             </div>
 
-            <div className="modal-actions">
+            <div className="modal-actions" style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
               <button
                 className="btn-secondary"
                 onClick={() => setTransactionsModal(null)}
