@@ -368,121 +368,126 @@ function MemberManagement({ members, onAddMember, onRefresh, expenses = [] }) {
         )}
 
         <div className="qr-codes-grid">
-          {filteredQrCodes.flatMap(([memberId, qrCodes]) => 
-            qrCodes.map(qr => {
-              const member = members.find(m => m._id === memberId)
-              return (
-                <div key={qr._id} className="qr-code-card">
-                  {editingQr === qr._id ? (
-                    <div className="qr-edit-form">
-                      <div className="form-group">
-                        <label>Label</label>
-                        <input
-                          type="text"
-                          value={qrFormData.label}
-                          onChange={(e) => setQrFormData({ ...qrFormData, label: e.target.value })}
-                          placeholder="QR Code Label"
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Update Image (optional)</label>
-                        <div className="file-input-wrapper">
+          {(() => {
+            const allQrCards = filteredQrCodes.flatMap(([memberId, qrCodes]) => 
+              (qrCodes || []).map(qr => {
+                const member = members.find(m => m._id === memberId)
+                return (
+                  <div key={qr._id} className="qr-code-card">
+                    {editingQr === qr._id ? (
+                      <div className="qr-edit-form">
+                        <div className="form-group">
+                          <label>Label</label>
                           <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFileChange}
-                            id={`edit-file-${qr._id}`}
-                            style={{ display: 'none' }}
+                            type="text"
+                            value={qrFormData.label}
+                            onChange={(e) => setQrFormData({ ...qrFormData, label: e.target.value })}
+                            placeholder="QR Code Label"
                           />
-                          <button
-                            type="button"
-                            onClick={() => document.getElementById(`edit-file-${qr._id}`)?.click()}
-                            className="file-select-btn"
-                          >
-                            <Upload size={16} />
-                            Choose New Image
-                          </button>
                         </div>
-                        {qrFormData.imagePreview && (
-                          <div className="image-preview-small">
-                            <img src={qrFormData.imagePreview} alt="Preview" />
+                        <div className="form-group">
+                          <label>Update Image (optional)</label>
+                          <div className="file-input-wrapper">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleFileChange}
+                              id={`edit-file-${qr._id}`}
+                              style={{ display: 'none' }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => document.getElementById(`edit-file-${qr._id}`)?.click()}
+                              className="file-select-btn"
+                            >
+                              <Upload size={16} />
+                              Choose New Image
+                            </button>
                           </div>
-                        )}
-                      </div>
-                      <div className="form-actions-inline">
-                        <button
-                          onClick={() => handleUpdateQRCode(memberId, qr)}
-                          className="btn-small btn-primary"
-                        >
-                          <Check size={16} />
-                          Save
-                        </button>
-                        <button
-                          onClick={cancelEditing}
-                          className="btn-small btn-secondary"
-                        >
-                          <X size={16} />
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="qr-card-header">
-                        <div className="qr-card-title">
-                          <h3>{qr.label}</h3>
-                          <span className="qr-member-badge">{member?.name}</span>
+                          {qrFormData.imagePreview && (
+                            <div className="image-preview-small">
+                              <img src={qrFormData.imagePreview} alt="Preview" />
+                            </div>
+                          )}
                         </div>
-                        <div className="qr-card-actions">
+                        <div className="form-actions-inline">
                           <button
-                            onClick={() => startEditing(qr)}
-                            className="icon-btn"
-                            title="Edit"
+                            onClick={() => handleUpdateQRCode(memberId, qr)}
+                            className="btn-small btn-primary"
                           >
-                            <Edit2 size={18} />
+                            <Check size={16} />
+                            Save
                           </button>
                           <button
-                            onClick={() => handleDeleteQRCode(memberId, qr._id)}
-                            className="icon-btn delete"
-                            title="Delete"
+                            onClick={cancelEditing}
+                            className="btn-small btn-secondary"
                           >
-                            <Trash2 size={18} />
+                            <X size={16} />
+                            Cancel
                           </button>
                         </div>
                       </div>
-                      <div
-                        className="qr-card-image"
-                        onClick={() => setViewingQr(qr)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {qr.imageData ? (
-                          <img src={qr.imageData} alt={qr.label} />
-                        ) : (
-                          <div className="qr-placeholder">
-                            <Image size={48} opacity={0.3} />
-                            <span>No image</span>
+                    ) : (
+                      <>
+                        <div className="qr-card-header">
+                          <div className="qr-card-title">
+                            <h3>{qr.label}</h3>
+                            <span className="qr-member-badge">{member?.name}</span>
                           </div>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => setViewingQr(qr)}
-                        className="btn-view-qr"
-                      >
-                        View Full Size
-                      </button>
-                    </>
-                  )}
+                          <div className="qr-card-actions">
+                            <button
+                              onClick={() => startEditing(qr)}
+                              className="icon-btn"
+                              title="Edit"
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteQRCode(memberId, qr._id)}
+                              className="icon-btn delete"
+                              title="Delete"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </div>
+                        <div
+                          className="qr-card-image"
+                          onClick={() => setViewingQr(qr)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {qr.imageData ? (
+                            <img src={qr.imageData} alt={qr.label} />
+                          ) : (
+                            <div className="qr-placeholder">
+                              <Image size={48} opacity={0.3} />
+                              <span>No image</span>
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => setViewingQr(qr)}
+                          className="btn-view-qr"
+                        >
+                          View Full Size
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )
+              })
+            )
+            
+            return allQrCards.length > 0 ? allQrCards : (
+              <div className="empty-state">
+                <div className="empty-icon">
+                  <QrCode size={80} strokeWidth={1.5} opacity={0.4} />
                 </div>
-              )
-            })
-          ).length === 0 && (
-            <div className="empty-state">
-              <div className="empty-icon">
-                <QrCode size={80} strokeWidth={1.5} opacity={0.4} />
+                <p>No QR codes yet</p>
+                <small>Add QR codes for members to display payment options</small>
               </div>
-              <p>No QR codes yet</p>
-              <small>Add QR codes for members to display payment options</small>
-            </div>
+            )
+          })()}
           )}
         </div>
       </div>
