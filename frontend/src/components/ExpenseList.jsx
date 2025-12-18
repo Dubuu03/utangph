@@ -235,7 +235,7 @@ function ExpenseList({ expenses, members, onRefresh }) {
       {/* Statistics Cards at Top */}
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #667eea, #764ba2)' }}>
+          <div className="stat-icon" style={{ background: '#3282B8' }}>
             <TrendingUp size={24} />
           </div>
           <div className="stat-content">
@@ -246,7 +246,7 @@ function ExpenseList({ expenses, members, onRefresh }) {
         </div>
         
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
+          <div className="stat-icon" style={{ background: '#10b981' }}>
             <CreditCard size={24} />
           </div>
           <div className="stat-content">
@@ -257,7 +257,7 @@ function ExpenseList({ expenses, members, onRefresh }) {
         </div>
         
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
+          <div className="stat-icon" style={{ background: '#f59e0b' }}>
             <ArrowRightLeft size={24} />
           </div>
           <div className="stat-content">
@@ -268,7 +268,7 @@ function ExpenseList({ expenses, members, onRefresh }) {
         </div>
         
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #ec4899, #be185d)' }}>
+          <div className="stat-icon" style={{ background: '#BBE1FA' }}>
             <BarChart3 size={24} />
           </div>
           <div className="stat-content">
