@@ -201,7 +201,8 @@ function ItemsList({ expenses, members, onRefresh }) {
             <tr>
               <th>Date</th>
               <th>Item</th>
-              <th>Total</th>
+              <th>Paid By</th>
+              <th>Amount</th>
               <th>Split Between</th>
               <th>Each Pays</th>
               <th>Actions</th>
@@ -236,7 +237,10 @@ function ItemsList({ expenses, members, onRefresh }) {
                       expense.description
                     )}
                   </td>
-                  <td data-label="Total" className="amount">
+                  <td data-label="Paid By" className="paid-by-cell">
+                    {getMemberName(typeof expense.paidBy === 'object' ? expense.paidBy._id : expense.paidBy)}
+                  </td>
+                  <td data-label="Amount" className="amount">
                     {isEditing ? (
                       <input
                         type="number"
