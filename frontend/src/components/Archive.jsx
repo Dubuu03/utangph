@@ -247,7 +247,7 @@ function Archive({ expenses, members, onRefresh }) {
             <Search size={18} />
             <input
               type="text"
-              placeholder=""
+              placeholder="Search transactions..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
