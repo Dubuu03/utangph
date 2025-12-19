@@ -244,7 +244,6 @@ function Archive({ expenses, members, onRefresh }) {
       <div className="card">
         <div className="archive-controls">
           <div className="search-box">
-            <Search size={18} />
             <input
               type="text"
               placeholder="Search transactions..."
